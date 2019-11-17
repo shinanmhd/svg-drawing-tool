@@ -15,7 +15,7 @@ export class CircleComponent extends ShapeComponent implements OnInit {
     formFields: Field[] = [
         {
             name: 'name',
-            label: 'Naam:',
+            label: 'Name:',
             type: 'input',
             inputType: 'text',
         },

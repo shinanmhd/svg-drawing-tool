@@ -39,6 +39,6 @@ export class ShapeService {
         //     console.log('FIND JSON : ', JSON.stringify(this.shapesComponents[i].shape));
         // }
 
-        return this.shapesComponents.find(x => x.shape.shapeProperties.name == name);
+        return this.shapesComponents.find(x => x.shape.shapeProperties.name === name);
     }
 }

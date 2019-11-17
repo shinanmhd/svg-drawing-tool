@@ -13,20 +13,34 @@ import { Field } from 'dynaform';
 export class RectangleComponent extends ShapeComponent implements OnInit {
 
     formFields: Field[] = [
-        {
-            name: 'x',
-            label: 'X:',
-            type: 'input',
-            inputType: 'text',
-            value: ''
-        },
-        {
-            name: 'y',
-            label: 'Y:',
-            type: 'input',
-            inputType: 'text',
-            value: ''
-        },
+      {
+          name: 'x',
+          label: 'X:',
+          type: 'input',
+          inputType: 'text',
+          value: ''
+      },
+      {
+          name: 'y',
+          label: 'Y:',
+          type: 'input',
+          inputType: 'text',
+          value: ''
+      },
+      {
+          name: 'width',
+          label: 'Width:',
+          type: 'input',
+          inputType: 'text',
+          value: ''
+      },
+      {
+          name: 'height',
+          label: 'Height:',
+          type: 'input',
+          inputType: 'text',
+          value: ''
+      },
     ];
 
     constructor() {
@@ -38,6 +52,16 @@ export class RectangleComponent extends ShapeComponent implements OnInit {
 
     ngOnInit() {
         console.log('RectangleComponent ngOnInit');
+    }
+
+    updateShapeProperties(value: any) {
+        console.log('CircleComponent : updateShapeProperties');
+        if (this.shape instanceof Rectangle) {
+            this.shape.originX = value.x;
+            this.shape.originY = value.y;
+            this.shape.width = value.width;
+            this.shape.height = value.height;
+        }
     }
 
     setStyles() {

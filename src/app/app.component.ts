@@ -1,4 +1,6 @@
-import { Component, ContentChild, TemplateRef, OnInit, ComponentFactoryResolver, ViewContainerRef, Injector, ViewChild } from '@angular/core';
+import { Component, ContentChild, TemplateRef, OnInit,
+         ComponentFactoryResolver, ViewContainerRef, Injector, ViewChild, OnChanges
+       } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { ShapeComponent } from './components/shape/shape.component';
@@ -23,7 +25,7 @@ import { Field } from 'dynaform';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnChanges {
     title = 'SVG Drawing Tool';
 
     @ViewChild(DynamicFormComponent) form: DynamicFormComponent;
@@ -40,16 +42,21 @@ export class AppComponent implements OnInit {
 
     selectedComponent: ShapeComponent;
 
-    isDragging: boolean = false;
-    isDrawing: boolean = false;
-    isResizing: boolean = false;
-    isSelectingPoints: boolean = false;
+    isDragging = false;
+    isDrawing = false;
+    isResizing = false;
+    isSelectingPoints = false;
 
     formFields: Field[] = [];
 
+    shapesComponents: ShapeComponent[] = []; // all shapes in the canvas
+
     @ContentChild(TemplateRef) shapeTemplate: TemplateRef<any>;
 
-    constructor(private componentFactoryResolver: ComponentFactoryResolver, private viewContainerRef: ViewContainerRef, private shapeService: ShapeService) {
+    constructor(
+      private componentFactoryResolver: ComponentFactoryResolver,
+      private viewContainerRef: ViewContainerRef,
+      private shapeService: ShapeService) {
         console.log('AppComponent constructor');
     }
 
@@ -61,6 +68,8 @@ export class AppComponent implements OnInit {
     }
 
     ngOnChanges() {
+      // this.shapesComponents = this.shapeService.getShapeComponents();
+      // console.log('LAYERS:::::::::::::::::::::::', this.shapesComponents);
     }
 
     selectShape(shapeType: string): void {
@@ -95,7 +104,7 @@ export class AppComponent implements OnInit {
     }
 
     getMousePosition(event: MouseEvent) {
-        var CTM = this.svg.getScreenCTM();
+        const CTM = this.svg.getScreenCTM();
         this.currentPosition.x = (event.clientX - CTM.e) / CTM.a;
         this.currentPosition.y = (event.clientY - CTM.f) / CTM.d;
     }
@@ -126,17 +135,26 @@ export class AppComponent implements OnInit {
     }
 
     canSelectPoints(): boolean {
-        if (this.selectedShape == ShapeType.PolyLine || this.selectedShape == ShapeType.Path) {
+        if (this.selectedShape === ShapeType.PolyLine || this.selectedShape === ShapeType.Path) {
             return true;
         }
         return false;
     }
 
     deSelectComponents() {
-        var shapes = this.getShapes();
-        for (var i = 0; i < shapes.length; i++) {
+        const shapes = this.getShapes();
+        for (let i = 0; i < shapes.length; i++) {
             shapes[i].isSelected = false;
         }
+    }
+
+    selectLayer(layer: any) {
+      console.log(layer.shapeProperties.name);
+      this.deSelectComponents();
+      this.selectedComponent = this.shapeService.findShapeComponent(layer.shapeProperties.name);
+      this.selectedComponent.isSelected = true;
+      this.shapeProperties = Object.assign({}, this.selectedComponent.shape.shapeProperties);
+      this.formFields = this.selectedComponent.getFormFields();
     }
 
     onMouseDown(event): void {
@@ -151,8 +169,18 @@ export class AppComponent implements OnInit {
                 console.log('FOUND COMPONENT:', this.selectedComponent);
                 this.selectedComponent.isSelected = true;
                 this.shapeProperties = Object.assign({}, this.selectedComponent.shape.shapeProperties);
-                console.log(event.target.id, ' DRAGGING :', this.selectedComponent);
+                console.log(event.target.id, ' DRAGGING ::::', this.selectedComponent);
+                this.selectedComponent.setFormFields(this.selectedComponent.shape);
                 this.formFields = this.selectedComponent.getFormFields();
+                // this.formFields[0].value = this.selectedComponent.shape.shapeProperties.name;
+                // this.formFields[1].value = this.selectedComponent.shape.originX;
+                // this.formFields[2].value = this.selectedComponent.shape.originY;
+                // this.formFields[3].value = this.selectedComponent.shape.r;
+                // this.formFields[4].value = this.selectedComponent.shape.shapeProperties.strokeColor;
+                // this.formFields[5].value = this.selectedComponent.shape.shapeProperties.fillColor;
+                // this.formFields[6].value = this.selectedComponent.shape.shapeProperties.strokeWidth;
+                // this.formFields = this.selectedComponent.shape;
+
                 console.log('form fields : ', this.formFields);
                 this.startDragging(event);
             }
@@ -163,7 +191,7 @@ export class AppComponent implements OnInit {
                 console.log('FOUND RESIZECOMPONENT:', this.selectedComponent);
                 this.isResizing = true;
             }
-        } else if (this.selectedShape != ShapeType.NoShape && !this.isSelectingPoints) {
+        } else if (this.selectedShape !== ShapeType.NoShape && !this.isSelectingPoints) {
             let injector = Injector.create([], this.viewContainerRef.parentInjector);
             let factory = this.componentFactoryResolver.resolveComponentFactory(this.buildComponent(this.selectedShape));
             let component = factory.create(injector);
@@ -186,6 +214,10 @@ export class AppComponent implements OnInit {
                 this.selectedComponent.startDrawing(this.currentPosition);
             }
         }
+    }
+
+    get layers() {
+      return this.shapeService.getShapeComponents();
     }
 
     onMouseMove(event): void {
@@ -231,14 +263,17 @@ export class AppComponent implements OnInit {
     }
 
     rgbToHex(r, g, b) {
-        if (r > 255 || g > 255 || b > 255)
-            throw "Invalid color component";
+        if (r > 255 || g > 255 || b > 255){
+            throw 'Invalid color component';
+        }
         return ((r << 16) | (g << 8) | b).toString(16);
     }
 
     submit(value: any) {
-        console.log('form values : ', value);
-        this.selectedComponent.updateShapeProperties(value);
+      if (value.keyCode === 13) {
+        console.log('form values :|":::::::::::::::::::: ', this.form.value);
+        this.selectedComponent.updateShapeProperties(this.form.value);
+      }
     }
 
 }

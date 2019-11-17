@@ -38,7 +38,7 @@ export class ShapeProperties {
 }
 
 /*
- * Interface for the shapes 
+ * Interface for the shapes
  */
 export interface BaseShape {
 }
@@ -50,6 +50,7 @@ export class Shape implements BaseShape {
     public shapeProperties: ShapeProperties;
     public originX: number;
     public originY: number;
+    public r: number;
 
     constructor(name: string) {
         this.shapeProperties = new ShapeProperties();

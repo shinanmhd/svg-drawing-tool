@@ -7,7 +7,8 @@
             <h1>{{ title }}</h1>
         </div>
     </div>
-    {{ form.value | json }}
+    {{ form.value | json }}<br>
+    <code *ngIf="selectedComponent">{{ selectedComponent.shape | json }}</code>
     <div class="row">
         <div class="col-md-2 tools nopadding">
             <div class="panel-group" id="accordion" aria-multiselectable="true">
@@ -81,20 +82,47 @@
                     <div class="panel-heading">
                         <div class="panel-title">
                             <a class="accordion-toggle collapsed" data-toggle="collapse" href="#properties" aria-expanded="false" aria-controls="properties">
-                Properties
-              </a>
+                              Properties
+                            </a>
                         </div>
                     </div>
                     <div id="properties" data-parent="#accordion" class="panel-collapse collapse">
                         <div class="panel-body">
                             <div class="row nopadding">
                                 <div class="col-md-12">
-                                    <dynamic-form [fields]="formFields" (submit)="submit($event)"></dynamic-form>
+                                    <dynamic-form [fields]="formFields" (keydown)="submit($event)"></dynamic-form>
+                                    <!-- <input type="submit" (click)="form.submit($event)"> -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Start Layers Panel -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <div class="panel-title">
+                        <a class="accordion-toggle collapsed" data-toggle="collapse" href="#layers" aria-expanded="false" aria-controls="layers">Layers</a>
+                    </div>
+                  </div>
+                  <div id="layers" data-parent="#accordion" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <ul>
+                        <li *ngFor="let layer of layers.slice().reverse()">
+                            <span *ngIf="layer.shape.shapeProperties.name === selectedComponent.shape.shapeProperties.name" style="color: red;" (click)="selectLayer(layer.shape)">
+                                {{ layer.shape.shapeProperties.name }}
+                            </span>
+                            <span *ngIf="layer.shape.shapeProperties.name != selectedComponent.shape.shapeProperties.name" (click)="selectLayer(layer.shape)">
+                                {{ layer.shape.shapeProperties.name }}
+                            </span>
+
+                        </li>
+                        <!-- <li *ngFor="let layer of layers.slice().reverse()">{{ layer.shape | json }}</li> -->
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- End Layers -->
             </div>
         </div>
         <div class="col-md-10 toolbar">
